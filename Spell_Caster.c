@@ -5,6 +5,7 @@
 #include <json-c/json.h>
 
 #define API_URL "https://api.open5e.com/spells/"
+#define HISTORY_FILE "spell_history.txt"
 
 struct MemoryStruct {
     char* memory;
@@ -105,6 +106,36 @@ void display_spell_card(const char* spell_data) {
     json_object_put(root);
 }
 
+void save_to_history(const char* spell_name) {
+    FILE* file = fopen(HISTORY_FILE, "a");
+    if (file == NULL) {
+        fprintf(stderr, "Kan het geschiedenisbestand niet openen.\n");
+        return;
+    }
+
+    fprintf(file, "%s\n", spell_name);
+    fclose(file);
+
+    printf("Keuze opgeslagen in het geschiedenisbestand.\n");
+}
+
+void display_history() {
+    FILE* file = fopen(HISTORY_FILE, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Kan het geschiedenisbestand niet openen.\n");
+        return;
+    }
+
+    char line[256];
+    printf("Geschiedenis van gemaakte keuzes:\n");
+    while (fgets(line, sizeof(line), file)) {
+        line[strcspn(line, "\r\n")] = 0;  // Verwijder newline-teken
+        printf("- %s\n", line);
+    }
+
+    fclose(file);
+}
+
 int main() {
     char spell_name[256];
 
@@ -117,8 +148,11 @@ int main() {
     if (spell_info) {
         // Toon de spell card als de informatie beschikbaar is
         display_spell_card(spell_info);
+        save_to_history(spell_name);
         free(spell_info);
     }
+
+    display_history();
 
     return 0;
 }
