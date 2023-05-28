@@ -94,4 +94,29 @@ void display_spell_card(const char* spell_data) {
     // Toon de spell card met relevante informatie
     printf("---------------------------------\n");
     printf("Naam: %s\n", json_object_get_string(spell_name));
-    printf("Niveau: %
+    printf("Niveau: %s\n", json_object_get_string(spell_level));
+    printf("School: %s\n", json_object_get_string(spell_school));
+    printf("Beschrijving: %s\n", json_object_get_string(spell_desc));
+    printf("---------------------------------\n");
+
+    // Vrijgeven van resources
+    json_object_put(root);
+}
+
+int main() {
+    char spell_name[256];
+
+    printf("Voer de naam van de spreuk in: ");
+    scanf("%s", spell_name);
+
+    // Haal de informatie op over de ingevoerde spreuk
+    char* spell_info = get_spell_info(spell_name);
+
+    if (spell_info) {
+        // Toon de spell card als de informatie beschikbaar is
+        display_spell_card(spell_info);
+        free(spell_info);
+    }
+
+    return 0;
+}
