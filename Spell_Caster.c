@@ -15,12 +15,13 @@ size_t WriteMemoryCallback(void* contents, size_t size, size_t nmemb, void* user
     size_t realsize = size * nmemb;
     struct MemoryStruct* mem = (struct MemoryStruct*)userp;
 
-    mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-    if (mem->memory == NULL) {
+    char* ptr = realloc(mem->memory, mem->size + realsize + 1);
+    if (ptr == NULL) {
         printf("Not enough memory (realloc returned NULL)\n");
         return 0;
     }
 
+    mem->memory = ptr;
     memcpy(&(mem->memory[mem->size]), contents, realsize);
     mem->size += realsize;
     mem->memory[mem->size] = 0;
@@ -61,6 +62,8 @@ char* get_spell_info(const char* spell_name) {
     // Controleer op fouten
     if (res != CURLE_OK) {
         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        free(chunk.memory);
+        curl_easy_cleanup(curl_handle);
         return NULL;
     }
 
@@ -68,11 +71,10 @@ char* get_spell_info(const char* spell_name) {
     curl_easy_cleanup(curl_handle);
 
     // Voeg een terminerende nul toe aan de ontvangen gegevens
-    chunk.memory = realloc(chunk.memory, chunk.size + 1);
-    chunk.memory[chunk.size] = '\0';
+    char* response = realloc(chunk.memory, chunk.size + 1);
+    response[chunk.size] = '\0';
 
-    // Geef de ontvangen gegevens terug
-    return chunk.memory;
+    return response;
 }
 
 void display_spell_card(const char* spell_data) {
